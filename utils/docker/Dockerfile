@@ -16,7 +16,7 @@ RUN apt update && apt install --no-install-recommends -y zip htop screen libgl1-
 COPY requirements.txt .
 RUN python -m pip install --upgrade pip wheel
 RUN pip uninstall -y Pillow torchtext  # torch torchvision
-RUN pip install --no-cache -r requirements.txt albumentations wandb gsutil notebook Pillow>=9.1.0 \
+RUN pip install --no-cache -r requirements.txt Pillow>=9.1.0 \
     'opencv-python<4.6.0.66' \
     --extra-index-url https://download.pytorch.org/whl/cu113
 
@@ -25,8 +25,8 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # Copy contents
-# COPY . /usr/src/app  (issues as not a .git directory)
-RUN git clone https://github.com/ultralytics/yolov5 /usr/src/app
+COPY . /usr/src/app
+# RUN git clone https://github.com/ultralytics/yolov5 /usr/src/app
 
 # Set environment variables
 ENV OMP_NUM_THREADS=8
