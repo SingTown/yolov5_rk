@@ -7,18 +7,21 @@ FROM nvcr.io/nvidia/pytorch:22.07-py3
 RUN rm -rf /opt/pytorch  # remove 1.2GB dir
 
 # Downloads to user config dir
-ADD https://ultralytics.com/assets/Arial.ttf https://ultralytics.com/assets/Arial.Unicode.ttf /root/.config/Ultralytics/
+COPY assets/Arial.ttf assets/Arial.Unicode.ttf /root/.config/Ultralytics/
+
+# COPY assets/sources_bionic.list /etc/apt/sources.list
 
 # Install linux packages
 RUN apt update && apt install --no-install-recommends -y zip htop screen libgl1-mesa-glx
+RUN apt install -y gcc vim libprotobuf-dev zlib1g zlib1g-dev libsm6
+RUN apt install -y libgl1 libglib2.0-0 android-tools-adb
 
 # Install pip packages
-COPY requirements.txt .
 RUN python -m pip install --upgrade pip wheel
-RUN pip uninstall -y Pillow torchtext  # torch torchvision
-RUN pip install --no-cache -r requirements.txt Pillow>=9.1.0 \
-    'opencv-python<4.6.0.66' \
-    --extra-index-url https://download.pytorch.org/whl/cu113
+# RUN pip config set global.index-url https://mirror.baidu.com/pypi/simple
+# RUN pip config set install.trusted-host mirror.baidu.com
+
+RUN pip uninstall -y Pillow torchtext tensorboard # torch torchvision
 
 # Create working directory
 RUN mkdir -p /usr/src/app
@@ -27,6 +30,11 @@ WORKDIR /usr/src/app
 # Copy contents
 COPY . /usr/src/app
 # RUN git clone https://github.com/ultralytics/yolov5 /usr/src/app
+
+RUN pip install --no-cache -r requirements.txt \
+    --extra-index-url https://download.pytorch.org/whl/cu113
+
+RUN pip install packages/rknn_toolkit2-1.5.2+b642f30c-cp38-cp38-linux_x86_64.whl
 
 # Set environment variables
 ENV OMP_NUM_THREADS=8
