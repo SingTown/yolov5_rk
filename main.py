@@ -40,6 +40,9 @@ try:
     parser.add_argument("pid", help="Project id on host")
     args = parser.parse_args()
     pid = args.pid
+    if pid == '-1':
+        event = json.loads(os.getenv('FC_CUSTOM_CONTAINER_EVENT'))
+        pid = event["pid"]
 
     base_auth = requests.auth.HTTPBasicAuth(os.getenv('USERNAME'), os.getenv('PASSWORD'))
     def post_failed():
@@ -71,22 +74,10 @@ try:
     if not os.path.exists(DATASET_PATH):
         os.mkdir(DATASET_PATH)
 
-    def download_image(f):
+    for f in tqdm(img_list):
         img_path = os.path.join(DATASET_PATH, f)
         if not os.path.exists(img_path):
             bucket.get_object_to_file('dataset/'+f, img_path)
-
-    from multiprocessing import Pool
-    from tqdm import tqdm
-    pbar = tqdm(total=len(img_list))
-    def update(*a):
-        pbar.update()
-    pool = Pool(8)
-    for f in img_list:
-        pool.apply_async(download_image, (f,), callback=update)
-    pool.close()
-    pool.join()
-
 
     # prepare dataset format
     ensure_empty(IMAGES_PATH)
