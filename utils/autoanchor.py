@@ -52,7 +52,9 @@ def check_anchors(dataset, model, thr=4.0, imgsz=640):
         try:
             anchors = kmean_anchors(dataset, n=na, img_size=imgsz, thr=thr, gen=1000, verbose=False)
         except Exception as e:
-            LOGGER.info(f'{PREFIX}ERROR: {e}')
+            # anchors is still the (nl, na, 2) model tensor here, which metric() cannot take
+            LOGGER.info(f'{PREFIX}ERROR: {e}, proceeding with original anchors')
+            return
         new_bpr = metric(anchors)[0]
         if new_bpr > bpr:  # replace anchors
             anchors = torch.tensor(anchors, device=m.anchors.device).type_as(m.anchors)
